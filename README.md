@@ -1,16 +1,27 @@
 # cheshire-east-bin-collection-ics
 
-Collects Cheshire East bin collection schedule for a Unique Property Reference Number (UPRN) and serves an auto-updating `.ics` calendar at a public URL.
+Fetches Cheshire East bin collection schedule for a Unique Property Reference Number (UPRN) and serves an auto-updating `.ics` calendar at a public URL.
+
+- [Prerequisites](#prerequisites)
+  - [Cheshire East UPRN Lookup](#cheshire-east-uprn-lookup)
+- [Installation](#installation)
+  - [Running with Docker](#running-with-docker)
+  - [Running standalone](#running-standalone)
+- [Configuration Options](#configuration-options)
 
 ## Prerequisites
 
-### Cheshire East UPRN
+### Cheshire East UPRN Lookup
 
-You can find your Unique Property Reference Number (UPRN) by following these steps:
+You can find your Unique Property Reference Number (UPRN) in Cheshire East by following these steps:
 
 1. Use the `Address Finder` on the [Cheshire East Public Map Viewer](https://maps.cheshireeast.gov.uk/ce/webmapping)
 
+![Cheshire East Public Map Viewer - Address Finder](https://i.imgur.com/9Ds72nV.png)
+
 2. Search for your address, and note your UPRN displayed
+
+![Cheshire East Unique Property Reference Number](https://i.imgur.com/4sTjCpZ.png)
 
 ## Installation
 
@@ -30,7 +41,7 @@ You can find your Unique Property Reference Number (UPRN) by following these ste
 
        http://yourhost:8080/collections.ics
 
-### Configuration Options
+## Configuration Options
 
 * `-uprn="100012357047"`
   * Set the UPRN
