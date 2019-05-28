@@ -49,7 +49,13 @@ You can find your Unique Property Reference Number (UPRN) in Cheshire East by fo
 
 3. Your public calendar URL will be logged on startup:
 
-       2019-05-28T00:12:30.628+01:00 [ALL] Serving calendar at http://localhost:8080/collections.ics
+        2019-05-28T23:32:32.614+01:00 [ALL] Serving calendar at http://[::]:8080/collections.ics
+        2019-05-28T23:32:34.334+01:00 [INF] req:1 <-- GET /collections.ics from [::1]:58626
+        2019-05-28T23:32:34.334+01:00 [INF] req:1 Fetching a fresh copy of data
+        2019-05-28T23:32:39.325+01:00 [INF] req:1 --> 200 (OK) in 4.991430799s
+        2019-05-28T23:32:42.235+01:00 [INF] req:2 <-- GET /collections.ics from [::1]:58660
+        2019-05-28T23:32:42.235+01:00 [DBG] req:2 Skipping update and serving data from cache
+        2019-05-28T23:32:42.237+01:00 [INF] req:2 --> 200 (OK) in 1.65305ms
 
 ## Configuration Options
 
@@ -61,6 +67,14 @@ You can find your Unique Property Reference Number (UPRN) in Cheshire East by fo
   - Range: `24h` to `7d`
 - `-addr="0.0.0.0:1234"`
   - Change the listen address/port
+
+## Building from source
+
+### Dockerfile
+
+There's a multi-stage dockerfile in the repo which will compile and produce a lightweight runnable image:
+
+    docker build -t cheshire-east-bin-collection-ics:latest .
 
 ## Contributing
 

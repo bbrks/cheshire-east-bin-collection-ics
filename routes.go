@@ -5,7 +5,7 @@ import (
 )
 
 func (s *server) routes() {
-	s.GET("/"+calendarName, s.handleCollections())
+	s.GET("/"+calendarName, s.handleCollections(fetchRemote))
 }
 
 func (s *server) GET(path string, h http.HandlerFunc) {

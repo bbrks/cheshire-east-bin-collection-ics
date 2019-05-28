@@ -1,4 +1,6 @@
+package main
 
+const sampleData = `
 
 <div class="outer-results-panel">
     <h2>Bin collection details for</h2>
@@ -1462,3 +1464,4 @@
     });
 </script>
 
+`

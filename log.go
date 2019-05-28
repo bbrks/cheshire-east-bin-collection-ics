@@ -10,6 +10,8 @@ import (
 	"github.com/zchee/color"
 )
 
+type LogFn func(level LogLevel, ctx context.Context, format string, v ...interface{})
+
 type Logger interface {
 	Log(level LogLevel, ctx context.Context, format string, v ...interface{})
 }
