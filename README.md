@@ -76,6 +76,12 @@ There's a multi-stage dockerfile in the repo which will compile and produce a li
 
     docker build -t cheshire-east-bin-collection-ics:latest .
 
+### Binaries
+
+With Go already installed, you can build a binary with the following command:
+
+    go build .
+
 ## Contributing
 
 Issues, feature requests or improvements welcome!

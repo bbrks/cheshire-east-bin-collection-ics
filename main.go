@@ -13,7 +13,7 @@ import (
 
 const (
 	appName    = "cheshire-east-bin-collection-ics"
-	appVersion = "0.1"
+	appVersion = "0.2"
 
 	fetchURL     = "https://online.cheshireeast.gov.uk/MyCollectionDay/SearchByAjax/GetBartecJobList?uprn="
 	calendarName = "collections.ics"
