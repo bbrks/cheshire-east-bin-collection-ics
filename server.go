@@ -1,9 +1,10 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -32,7 +33,7 @@ func (s *server) handleCollections() http.HandlerFunc {
 
 		jobList := doc.Find("table.full-job-list-for-posting")
 		if jobList.Length() == 0 {
-			s.Log(LevelError, nil, "No collection list found in HTML")
+			return nil, errors.New("No collection list found in HTML")
 		} else if jobList.Length() > 1 {
 			s.Log(LevelWarn, nil, "More than one collection list found in HTML... using first one only.")
 		}
@@ -95,40 +96,41 @@ func (s *server) handleCollections() http.HandlerFunc {
 		return collections, nil
 	}
 
-	//// fetch gets the current collection dates for the given UPRN
-	//fetch := func(uprn string) (Collections, error) {
-	//	resp, err := http.Get(fetchURL + uprn)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	defer resp.Body.Close()
-	//
-	//	if resp.StatusCode != http.StatusOK {
-	//		return nil, fmt.Errorf("error fetching data: %v", err)
-	//	}
-	//
-	//	return collectionDates(resp.Body)
-	//}
-
-	fetchStub := func(uprn string) (*Collections, error) {
-		f, err := os.Open("fixtures/source-data.html")
+	// fetch gets the current collection dates for the given UPRN
+	fetch := func(uprn string) (*Collections, error) {
+		resp, err := http.Get(fetchURL + uprn)
 		if err != nil {
 			return nil, err
 		}
-		defer f.Close()
+		defer resp.Body.Close()
 
-		return collectionDates(f)
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("error fetching data: %v", err)
+		}
+
+		return collectionDates(resp.Body)
 	}
+
+	//fetchStub := func(uprn string) (*Collections, error) {
+	//	f, err := os.Open("fixtures/source-data.html")
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	defer f.Close()
+	//
+	//	return collectionDates(f)
+	//}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "text/calendar")
 		w.Header().Set("charset", "utf-8")
 		w.Header().Set("Content-Disposition", "inline")
-		w.Header().Set("filename", "calendar.ics")
+		w.Header().Set("filename", calendarName)
 
-		collections, err := fetchStub(s.uprn)
+		collections, err := fetch(s.uprn)
 		if err != nil {
 			write(w, http.StatusInternalServerError, []byte(err.Error()))
+			return
 		}
 
 		goics.NewICalEncode(w).Encode(collections)
