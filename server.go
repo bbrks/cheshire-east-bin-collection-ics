@@ -69,11 +69,11 @@ func serveCollections(w http.ResponseWriter, c *Collections) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-type", "text/calendar")
 	w.Header().Set("charset", "utf-8")
 	w.Header().Set("Content-Disposition", "inline")
 	w.Header().Set("filename", calendarName)
+	w.WriteHeader(http.StatusOK)
 	goics.NewICalEncode(w).Encode(c)
 }
 
