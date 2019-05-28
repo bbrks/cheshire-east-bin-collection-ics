@@ -9,10 +9,10 @@ import (
 )
 
 type Collection struct {
-	ID   string
-	Time time.Time
-	Bin  Bin
-	Name string
+	ID          string
+	Time        time.Time
+	Bin         Bin
+	Name        string
 	Description string
 }
 
@@ -25,13 +25,6 @@ type Collections struct {
 }
 
 func (c *Collections) EmitICal() goics.Componenter {
-	/*
-		BEGIN:VCALENDAR
-		VERSION:2.0
-		PRODID:-//hacksw/handcal//NONSGML v1.0//EN
-			...
-		END:VCALENDAR
-	*/
 	comp := goics.NewComponent()
 	comp.SetType("VCALENDAR")
 	comp.AddProperty("VERSION", "2.0")
@@ -53,7 +46,7 @@ func (c *Collections) EmitICal() goics.Componenter {
 		k, v = goics.FormatDateTimeField("DTSTART", collection.Time)
 		s.AddProperty(k, v)
 
-		k, v = goics.FormatDateTimeField("DTEND", collection.Time.Add(time.Hour * 2))
+		k, v = goics.FormatDateTimeField("DTEND", collection.Time.Add(time.Hour*2))
 		s.AddProperty(k, v)
 
 		comp.AddComponent(s)
@@ -64,11 +57,9 @@ func (c *Collections) EmitICal() goics.Componenter {
 
 var _ goics.ICalEmiter = &Collections{}
 
-var _ sort.Interface = &Collections{}
-
 func NewCollections() *Collections {
 	return &Collections{
-		list: make([]Collection, 0),
+		list:  make([]Collection, 0),
 		idIdx: make(map[string]int, 0),
 	}
 }
@@ -77,13 +68,21 @@ func (c *Collections) List() []Collection {
 	return c.list
 }
 
+// Add adds the given collection if it does not already have it
 func (c *Collections) Add(collection Collection) {
 	c.Lock()
 	defer c.Unlock()
+
+	if _, found := c.idIdx[collection.ID]; found {
+		return
+	}
+
 	newIdx := len(c.list)
 	c.list = append(c.list, collection)
 	c.idIdx[collection.ID] = newIdx
 }
+
+var _ sort.Interface = &Collections{}
 
 func (c *Collections) Len() int      { return len(c.list) }
 func (c *Collections) Swap(i, j int) { c.list[i], c.list[j] = c.list[j], c.list[i] }
@@ -93,33 +92,4 @@ func (c *Collections) Less(i, j int) bool {
 		return c.list[i].Bin < c.list[j].Bin
 	}
 	return c.list[i].Time.Before(c.list[j].Time)
-}
-
-type Date struct {
-	year  int
-	month time.Month
-	day   int
-}
-
-// Compare returns:
-// -1 if a < b
-//  0 if a == b
-// +1 if a > b
-func (a Date) Compare(b Date) int {
-	// a < b
-	if a.year < b.year ||
-		a.month < b.month ||
-		a.day < b.day {
-		return -1
-	}
-
-	// a == b
-	if a.year == b.year &&
-		a.month == b.month &&
-		a.day == b.day {
-		return 0
-	}
-
-	// a > b
-	return 1
 }

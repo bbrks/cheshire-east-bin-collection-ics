@@ -23,7 +23,7 @@ func main() {
 	envUPRN := os.Getenv("UPRN")
 
 	flagUPRN := flag.String("uprn", "", "Your Unique Property Reference Number (UPRN)")
-	flagUpdateInterval := flag.Duration("updateInterval", time.Hour*24, "TODO")
+	flagUpdateInterval := flag.Duration("updateInterval", time.Hour*24, "Data younger than this value will be served from the cache")
 	flagBindAddr := flag.String("http", ":8080", "The address and/or port to bind to the HTTP server")
 	flagLogQuiet := flag.Bool("q", false, "Disables all logging except for errors")
 	flag.Parse()
@@ -33,6 +33,8 @@ func main() {
 		router:         httprouter.New(),
 		httpClient:     http.DefaultClient,
 		updateInterval: *flagUpdateInterval,
+		cache:          NewCollections(),
+		cachedAt:       time.Time{},
 	}
 	ctx := context.Background()
 

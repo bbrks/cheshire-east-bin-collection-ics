@@ -20,11 +20,13 @@ type server struct {
 
 	uprn           string
 	updateInterval time.Duration
+	cache          *Collections
+	cachedAt       time.Time
 }
 
 func (s *server) handleCollections() http.HandlerFunc {
-	collectionDates := func(r io.Reader) (*Collections, error) {
-		collections := NewCollections()
+	updateCache := func(r io.Reader) (*Collections, error) {
+		collections := s.cache
 
 		doc, err := goquery.NewDocumentFromReader(r)
 		if err != nil {
@@ -85,19 +87,25 @@ func (s *server) handleCollections() http.HandlerFunc {
 			}
 
 			collections.Add(Collection{
-				ID:   cId,
-				Bin:  bin,
-				Time: date,
-				Name: cName,
+				ID:          cId,
+				Bin:         bin,
+				Time:        date,
+				Name:        cName,
 				Description: cJobDescription,
 			})
 		})
 
+		s.cachedAt = time.Now()
 		return collections, nil
 	}
 
 	// fetch gets the current collection dates for the given UPRN
 	fetch := func(uprn string) (*Collections, error) {
+		if time.Since(s.cachedAt) < s.updateInterval {
+			s.Log(LevelInfo, nil, "serving collections from cache")
+			return s.cache, nil
+		}
+
 		resp, err := http.Get(fetchURL + uprn)
 		if err != nil {
 			return nil, err
@@ -108,7 +116,7 @@ func (s *server) handleCollections() http.HandlerFunc {
 			return nil, fmt.Errorf("error fetching data: %v", err)
 		}
 
-		return collectionDates(resp.Body)
+		return updateCache(resp.Body)
 	}
 
 	//fetchStub := func(uprn string) (*Collections, error) {
@@ -118,7 +126,7 @@ func (s *server) handleCollections() http.HandlerFunc {
 	//	}
 	//	defer f.Close()
 	//
-	//	return collectionDates(f)
+	//	return updateCache(f)
 	//}
 
 	return func(w http.ResponseWriter, r *http.Request) {
