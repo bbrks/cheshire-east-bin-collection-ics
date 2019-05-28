@@ -27,6 +27,8 @@ type server struct {
 	cachedAt       time.Time
 }
 
+var errNoData = errors.New("no collection data found in HTML")
+
 func (s *server) handleCollections(fetchFn func(uprn string) (io.ReadCloser, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -41,7 +43,11 @@ func (s *server) handleCollections(fetchFn func(uprn string) (io.ReadCloser, err
 			defer readCloser.Close()
 
 			parsedCollections, err := s.parseCollections(r.Context(), readCloser)
-			if err != nil {
+			if err == errNoData {
+				s.Log(LevelError, r.Context(), "No data found for UPRN: %v", err)
+				write(w, http.StatusBadRequest, []byte(err.Error()))
+				return
+			} else if err != nil {
 				s.Log(LevelError, r.Context(), "Error parsing data: %v - serving stale cache...", err)
 				serveCollections(w, s.cache)
 				return
@@ -58,6 +64,11 @@ func (s *server) handleCollections(fetchFn func(uprn string) (io.ReadCloser, err
 }
 
 func serveCollections(w http.ResponseWriter, c *Collections) {
+	if c.Len() == 0 {
+		write(w, http.StatusBadRequest, []byte("No collection data found"))
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-type", "text/calendar")
 	w.Header().Set("charset", "utf-8")
@@ -74,7 +85,7 @@ func (s *server) parseCollections(ctx context.Context, r io.Reader) (*Collection
 
 	jobList := doc.Find("table.full-job-list-for-posting")
 	if jobList.Length() == 0 {
-		return nil, errors.New("no collection list found in HTML")
+		return nil, errNoData
 	} else if jobList.Length() > 1 {
 		s.Log(LevelWarn, ctx, "More than one collection list found in HTML... using first one only.")
 	}

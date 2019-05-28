@@ -37,7 +37,7 @@ You can find your Unique Property Reference Number (UPRN) in Cheshire East by fo
 
 ### Running with Docker
 
-    UPRN="100012357047" docker run -d -p 8080:8080 bbrks/cheshire-east-bin-collection-ics
+    docker run -d -e UPRN="100012357047" -p 8080:8080 bbrks/cheshire-east-bin-collection-ics
 
 ### Running standalone
 
