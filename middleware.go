@@ -12,9 +12,13 @@ import (
 
 // middleware is a set of common middleware handlers for all requests.
 func (s *server) middleware(next http.Handler) http.Handler {
-	return s.mwReqID(s.mwRecover(s.mwProxy(s.mwLog(s.mwServerHeader(next)))))
+	return s.mwReqID(s.mwRecover(s.mwProxy(s.mwLog(s.mwServerHeader(s.mwCompress(next))))))
 }
 
+// mwCompress will compress responses.
+func (s *server) mwCompress(next http.Handler) http.Handler {
+	return handlers.CompressHandler(next)
+}
 // mwProxy pulls proxy headers from the request.
 func (s *server) mwProxy(next http.Handler) http.Handler {
 	return handlers.ProxyHeaders(next)
