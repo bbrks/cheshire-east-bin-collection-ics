@@ -65,7 +65,7 @@ func main() {
 	}
 
 	s.Log(LevelAll, ctx, "Serving calendar at http://%s/%s", l.Addr().String(), calendarName)
-	err = http.Serve(l, s.middleware(s.router.ServeHTTP))
+	err = http.Serve(l, s.middleware(s.router))
 	if err != nil {
 		s.Log(LevelError, ctx, "Error from HTTP server: %v", err)
 		os.Exit(1)

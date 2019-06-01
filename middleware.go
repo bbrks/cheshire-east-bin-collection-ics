@@ -6,24 +6,32 @@ import (
 	"strconv"
 	"sync/atomic"
 	"time"
+
+	"github.com/gorilla/handlers"
 )
 
 // middleware is a set of common middleware handlers for all requests.
-func (s *server) middleware(next http.HandlerFunc) http.HandlerFunc {
-	return s.mwReqID(s.mwRecover(s.mwServerHeader(s.mwLog(next))))
+func (s *server) middleware(next http.Handler) http.Handler {
+	return s.mwReqID(s.mwRecover(s.mwProxy(s.mwLog(s.mwServerHeader(next)))))
+}
+
+// mwProxy pulls proxy headers from the request.
+func (s *server) mwProxy(next http.Handler) http.Handler {
+	return handlers.ProxyHeaders(next)
 }
 
 // mwServerHeader adds a Server header to responses.
-func (s *server) mwServerHeader(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (s *server) mwServerHeader(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Server", appName+"/"+appVersion)
 		next.ServeHTTP(w, r)
 	}
+	return http.HandlerFunc(fn)
 }
 
 // mwRecover recovers from a panic that occurred when handling a request.
-func (s *server) mwRecover(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (s *server) mwRecover(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
 				s.Log(LevelError, r.Context(), "panic serving request: %v", err)
@@ -34,28 +42,29 @@ func (s *server) mwRecover(next http.HandlerFunc) http.HandlerFunc {
 		}()
 		next.ServeHTTP(w, r)
 	}
+	return http.HandlerFunc(fn)
 }
 
 type reqIDKey struct{}
 
 // mwReqID assigns a unique ID to each HTTP request.
-func (s *server) mwReqID(next http.HandlerFunc) http.HandlerFunc {
+func (s *server) mwReqID(next http.Handler) http.Handler {
 	// gReqID is an atomically incremented variable to identify each HTTP request with a unique ID.
 	var gReqID uint64
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	fn := func(w http.ResponseWriter, r *http.Request) {
 		// increment request sequence
 		reqID := strconv.FormatUint(atomic.AddUint64(&gReqID, 1), 10)
 		r = r.WithContext(context.WithValue(r.Context(), reqIDKey{}, reqID))
 
 		next.ServeHTTP(w, r)
 	}
+	return http.HandlerFunc(fn)
 }
 
 // mwLog logs a request, response, and timing information.
-func (s *server) mwLog(next http.HandlerFunc) http.HandlerFunc {
-
-	return func(w http.ResponseWriter, req *http.Request) {
+func (s *server) mwLog(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, req *http.Request) {
 		start := time.Now()
 
 		// log incoming request data
@@ -75,6 +84,7 @@ func (s *server) mwLog(next http.HandlerFunc) http.HandlerFunc {
 		// log final request data
 		s.Log(level, req.Context(), "--> %d (%s) in %s", rsp.status, http.StatusText(rsp.status), time.Since(start))
 	}
+	return http.HandlerFunc(fn)
 }
 
 type responseLogger struct {
