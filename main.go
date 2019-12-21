@@ -58,13 +58,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	s.uprn = uprn
-	s.routes()
-
 	if *flagPprofAddr != "" {
 		l, err := net.Listen("tcp", *flagPprofAddr)
 		if err != nil {
-			s.Log(LevelError, ctx, err.Error())
+			s.Log(LevelError, ctx, "Error listening on %v: %v", *flagPprofAddr, err)
 			os.Exit(1)
 		}
 		s.Log(LevelDebug, ctx, "Serving pprof at http://%s/debug/pprof/...", l.Addr().String())
@@ -77,9 +74,12 @@ func main() {
 		}()
 	}
 
+	s.uprn = uprn
+	s.routes()
+
 	l, err := net.Listen("tcp", *flagBindAddr)
 	if err != nil {
-		s.Log(LevelError, ctx, err.Error())
+		s.Log(LevelError, ctx, "Error listening on %v: %v", *flagBindAddr, err)
 		os.Exit(1)
 	}
 
