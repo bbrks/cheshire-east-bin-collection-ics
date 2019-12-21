@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	_ "net/http/pprof"
+
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -26,6 +28,7 @@ func main() {
 	flagUpdateInterval := flag.Duration("updateInterval", time.Hour*24, "Data younger than this value will be served from the cache")
 	flagBindAddr := flag.String("http", ":8080", "The address and/or port to bind to the HTTP server")
 	flagLogQuiet := flag.Bool("q", false, "Disables all logging except for errors")
+	flagPprofAddr := flag.String("pprof", "localhost:6060", "The address and/or port to bind to the pprof HTTP server")
 	flag.Parse()
 
 	s := server{
@@ -57,6 +60,22 @@ func main() {
 
 	s.uprn = uprn
 	s.routes()
+
+	if *flagPprofAddr != "" {
+		l, err := net.Listen("tcp", *flagPprofAddr)
+		if err != nil {
+			s.Log(LevelError, ctx, err.Error())
+			os.Exit(1)
+		}
+		s.Log(LevelDebug, ctx, "Serving pprof at http://%s/debug/pprof/...", l.Addr().String())
+		go func() {
+			err = http.Serve(l, nil)
+			if err != nil {
+				s.Log(LevelError, ctx, "Error from pprof HTTP server: %v", err)
+				os.Exit(1)
+			}
+		}()
+	}
 
 	l, err := net.Listen("tcp", *flagBindAddr)
 	if err != nil {
