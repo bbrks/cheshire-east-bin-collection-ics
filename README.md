@@ -1,6 +1,6 @@
 # 🗑📅 Cheshire East Bin Collection iCalendar (.ics)
 
-[![Build Status](https://travis-ci.com/bbrks/cheshire-east-bin-collection-ics.svg)](https://travis-ci.com/bbrks/cheshire-east-bin-collection-ics) [![GitHub tag](https://img.shields.io/github/tag/bbrks/cheshire-east-bin-collection-ics.svg)](https://github.com/bbrks/cheshire-east-bin-collection-ics/releases) [![](https://img.shields.io/docker/pulls/bbrks/cheshire-east-bin-collection-ics.svg)](https://hub.docker.com/u/bbrks/cheshire-east-bin-collection-ics) [![license](https://img.shields.io/github/license/bbrks/cheshire-east-bin-collection-ics.svg)](https://github.com/bbrks/cheshire-east-bin-collection-ics/blob/master/LICENSE)
+[![GitHub tag](https://img.shields.io/github/tag/bbrks/cheshire-east-bin-collection-ics.svg)](https://github.com/bbrks/cheshire-east-bin-collection-ics/releases) [![](https://img.shields.io/docker/pulls/bbrks/cheshire-east-bin-collection-ics.svg)](https://hub.docker.com/u/bbrks/cheshire-east-bin-collection-ics) [![license](https://img.shields.io/github/license/bbrks/cheshire-east-bin-collection-ics.svg)](https://github.com/bbrks/cheshire-east-bin-collection-ics/blob/master/LICENSE)
 
 Fetches Cheshire East bin collection schedule for a Unique Property Reference Number (UPRN) and serves an auto-updating `.ics` calendar at a public URL.
 
